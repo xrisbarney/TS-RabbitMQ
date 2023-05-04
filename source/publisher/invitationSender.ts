@@ -13,21 +13,35 @@ class MQPublisher {
   }
 
   async start(): Promise<void> {
-    console.log('Connecting to RabbitMQ...');
-    this.connection = await client.connect(this.rabbitMQURL);
-    this.channel = await this.connection.createChannel();
-    console.log('Connected to RabbitMQ');
+    try {
+      console.log('Connecting to RabbitMQ...');
+      this.connection = await client.connect(this.rabbitMQURL);
+      this.channel = await this.connection.createChannel();
+      console.log('Connected to RabbitMQ');
+    } catch (error) {
+      console.log(error);
+    }
+
   }
 
   public async publish(msg: string) {
-    console.log('Sending message to RabbitMQ...');
-    this.channel?.sendToQueue(this.queueName, Buffer.from(msg));
+    try {
+      console.log('Sending message to RabbitMQ...');
+      this.channel?.sendToQueue(this.queueName, Buffer.from(msg));
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async stop(): Promise<void> {
-    console.log('Closing connection to RabbitMQ...');
-    await this.channel?.close();
-    await this.connection?.close();
+
+    try {
+      console.log('Closing connection to RabbitMQ...');
+      await this.channel?.close();
+      await this.connection?.close();
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
 

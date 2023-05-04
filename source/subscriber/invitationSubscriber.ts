@@ -13,10 +13,15 @@ class MQConsumer {
   }
 
   async start(): Promise<void> {
-    this.connection = await client.connect(this.rabbitMQURL);
-    this.channel = await this.connection.createChannel();
-    await this.channel.assertQueue(this.queueName);
-    await this.channel.consume(this.queueName, this.onMessageReceived.bind(this));
+    try {
+      this.connection = await client.connect(this.rabbitMQURL);
+      this.channel = await this.connection.createChannel();
+      await this.channel.assertQueue(this.queueName);
+      await this.channel.consume(this.queueName, this.onMessageReceived.bind(this));
+    } catch (error) {
+      console.log(error);
+    }
+
   }
 
   private onMessageReceived(msg: ConsumeMessage | null): void {
@@ -27,8 +32,13 @@ class MQConsumer {
   }
 
   async stop(): Promise<void> {
-    await this.channel?.close();
-    await this.connection?.close();
+    try {
+
+      await this.channel?.close();
+      await this.connection?.close();
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
 

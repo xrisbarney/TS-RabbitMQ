@@ -8,13 +8,14 @@ const EARTH_RADIUS_IN_KM = 6371;
 
 class InvitesController {
   private readonly publisher: MQPublisher;
-  private rabbitMQURL: string;
-  private queueName: string;
+  // private rabbitMQURL: string;
+  // private queueName: string;
 
   constructor(rabbitMQURL: string, queueName: string) {
+    // this.queueName = queueName;
+    // this.rabbitMQURL = rabbitMQURL;
     this.publisher = new MQPublisher(rabbitMQURL, queueName);
-    this.queueName = queueName;
-    this.rabbitMQURL = rabbitMQURL;
+
   }
 
   private toRadians(degrees: number): number {
@@ -107,11 +108,16 @@ class InvitesController {
 
   private async sendCustomerIdsToMessageBroker(customerIds: string[]) {
     // const publisher = new MQPublisher(this.rabbitMQURL, this.queueName);
-    await this.publisher.start();
-    customerIds.map(async (customerId) => {
-      await this.publisher.publish(JSON.stringify(customerId));
-    });
-    await this.publisher.stop();
+    try {
+      await this.publisher.start();
+      customerIds.map(async (customerId) => {
+        await this.publisher.publish(JSON.stringify(customerId));
+      });
+      await this.publisher.stop();
+    } catch (error) {
+      console.log(error);
+    }
+
   }
 };
 
