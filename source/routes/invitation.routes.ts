@@ -1,9 +1,7 @@
 import { Router } from "express";
-// import {
-//   InvitesController,
-// } from "../controllers/invitation.controller";
-
 import InvitesController from "../controllers/invitation.controller";
+
+
 const router: Router = Router();
 const rabbitMQURL: string = "amqp://username:password@192.168.33.17:5672";
 const eventQueue: string = "customerInvites";
