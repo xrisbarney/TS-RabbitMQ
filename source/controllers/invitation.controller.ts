@@ -4,16 +4,16 @@ import { Coordinates } from "../models/coordinates.model";
 import * as multer from 'multer';
 import createMQProducer from "../publisher/invitationSender";
 
-
+const EARTH_RADIUS_IN_KM = 6371;
 export const computeInvites = async (req: Request, res: Response): Promise<void> => {
 
-
-  // // Set up multer middleware to handle file uploads
+  // Set up multer middleware to handle file uploads
   const storage = multer.memoryStorage();
   const upload = multer({ storage: storage });
 
   // Handle file upload using the upload.single() middleware function
   upload.single('file')(req, res, (err: any) => {
+
     // retrieve the fintech coordinates
     const fintechCoordinatesLong: number = parseFloat(req.body.fintechCoordinatesLong);
     const fintechCoordinatesLat: number = parseFloat(req.body.fintechCoordinatesLat);
@@ -30,17 +30,18 @@ export const computeInvites = async (req: Request, res: Response): Promise<void>
 
       const customersLocations: Customer[] = lines.map((line) => {
 
+        /** We can decide to split the id, long and lat automatically by destructuring. 
+        However, we need to consider that they may not always be in order.
+        **/
         // const [id, lat, long] = line.split(',');
 
-        // Extract the values for ID, latitude and long
+        // Extract the values for ID, latitude and long regardless of position
         const id = line.split("id: ")[1].split(",")[0];
         const lat = line.split("lat:")[1].split(",")[0];
         const long = line.split("long:")[1].split(",")[0];
         const customerLocation: Customer = { id: id, lat: parseFloat(lat), long: parseFloat(long) };
 
-
-
-        // console.log(distance);
+        // Handle various errors like null latitude values, and short customer id's
         if (!customerLocation.lat) {
           console.log("Invalid latitude");
         }
@@ -52,7 +53,8 @@ export const computeInvites = async (req: Request, res: Response): Promise<void>
         }
         return { id, lat: parseFloat(lat), long: parseFloat(long) };
       });
-      //compute the great circle distance using the greatcircle function
+
+      //compute the great circle distance using the greatcircle function for all customers
       const customersWithinRadius = filterCustomersWithinRadius(customersLocations, 100, fintechCoordinates,);
       const sortedCustomers = sortCustomersById(customersWithinRadius);
       const customerIds = sortedCustomers.map((customer) => customer.id);
@@ -63,8 +65,6 @@ export const computeInvites = async (req: Request, res: Response): Promise<void>
 };
 
 // Great circle computation reference https://github.com/thealmarques/haversine-distance-typescript/blob/master/index.ts
-const EARTH_RADIUS_IN_KM = 6371;
-
 function toRadians(degrees: number): number {
   return degrees * (Math.PI / 180);
 }
@@ -96,8 +96,8 @@ function sortCustomersById(customers: Customer[]): Customer[] {
 }
 
 async function sendCustomerIdsToMessageBroker(customerIds: string[]) {
-  // publish messages to a RabbitMQ
-  const rabbitMQURL: string = process.env.RABBITMQ_URL?.toString() || "amqp://username:password@192.168.33.17:5672";
+  // publish messages to a RabbitMQ instance
+  const rabbitMQURL: string = "amqp://username:password@192.168.33.17:5672";
   const eventQueue: string = "customerInvites";
   const producer = await createMQProducer(rabbitMQURL, eventQueue);
   customerIds.map((customerId) => {
@@ -105,10 +105,3 @@ async function sendCustomerIdsToMessageBroker(customerIds: string[]) {
     producer(JSON.stringify(customerId));
   });
 }
-
-// function printCustomerIdsToConsole(customerIds: string[]) {
-//   console.log(`Customers within 100km radius of FINTECH CO.: ${customerIds.join(', ')}`);
-// }
-
-// sendCustomerIdsToMessageBroker(customerIds);
-// printCustomerIdsToConsole(customerIds);

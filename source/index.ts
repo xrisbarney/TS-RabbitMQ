@@ -3,7 +3,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 import * as express from 'express';
 import invitationRouter from "./routes/invitation.routes";
-import createMQConsumer from './subscriber/invitationSubscriber'
+import MQConsumer from './subscriber/invitationSubscriber'
 
 
 const main = async (): Promise<void> => {
@@ -15,8 +15,8 @@ const main = async (): Promise<void> => {
   const port = process.env.PORT;
   const rabbitMQURL: string = process.env.RABBITMQ_URL?.toString() || "amqp://username:password@192.168.33.17:5672";
   const eventQueue: string = "customerInvites";
-  const startConsumer = await createMQConsumer(rabbitMQURL, eventQueue);
-  startConsumer;
+  const consumer = new MQConsumer(rabbitMQURL, eventQueue);
+  await consumer.start();
 
   // Routing
   app.get('/', (req, res) => {
