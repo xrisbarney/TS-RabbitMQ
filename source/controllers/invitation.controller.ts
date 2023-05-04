@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { Customer } from "../models/customers.model";
 import { Coordinates } from "../models/coordinates.model";
 import * as multer from 'multer';
-import createMQProducer from "../publisher/invitationSender";
+import MQPublisher from "../publisher/invitationSender";
 
 const EARTH_RADIUS_IN_KM = 6371;
 export const computeInvites = async (req: Request, res: Response): Promise<void> => {
@@ -99,9 +99,10 @@ async function sendCustomerIdsToMessageBroker(customerIds: string[]) {
   // publish messages to a RabbitMQ instance
   const rabbitMQURL: string = "amqp://username:password@192.168.33.17:5672";
   const eventQueue: string = "customerInvites";
-  const producer = await createMQProducer(rabbitMQURL, eventQueue);
-  customerIds.map((customerId) => {
-    // console.log(customerId);
-    producer(JSON.stringify(customerId));
+  const publisher = new MQPublisher(rabbitMQURL, eventQueue);
+  await publisher.start();
+  customerIds.map(async (customerId) => {
+    await publisher.publish(JSON.stringify(customerId));
   });
+  await publisher.stop();
 }
