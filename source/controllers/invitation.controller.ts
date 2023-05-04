@@ -106,12 +106,12 @@ class InvitesController {
   };
 
   private async sendCustomerIdsToMessageBroker(customerIds: string[]) {
-    const publisher = new MQPublisher(this.rabbitMQURL, this.queueName);
-    await publisher.start();
+    // const publisher = new MQPublisher(this.rabbitMQURL, this.queueName);
+    await this.publisher.start();
     customerIds.map(async (customerId) => {
-      await publisher.publish(JSON.stringify(customerId));
+      await this.publisher.publish(JSON.stringify(customerId));
     });
-    await publisher.stop();
+    await this.publisher.stop();
   }
 };
 
