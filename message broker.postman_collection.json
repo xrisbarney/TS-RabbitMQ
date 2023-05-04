@@ -1,0 +1,50 @@
+{
+	"info": {
+		"_postman_id": "2a74103f-550f-48eb-b99f-adf3918c89e0",
+		"name": "message broker",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Compute invite",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/Chris/Downloads/customers.txt"
+						},
+						{
+							"key": "fintechCoordinatesLat",
+							"value": "52.493256",
+							"type": "default"
+						},
+						{
+							"key": "fintechCoordinatesLong",
+							"value": "13.446082 ",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:3001/api/compute-invites",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"api",
+						"compute-invites"
+					]
+				},
+				"description": "Make a request to the endpoint /api/compute-invites with the file, and the fintech coordinates."
+			},
+			"response": []
+		}
+	]
+}
